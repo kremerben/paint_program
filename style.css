@@ -1,0 +1,16 @@
+body {
+text-align: center;
+}
+.colorbox {
+	display: inline-block;
+	height:40px;
+	width: 40px;
+}
+
+#DrawCanvas {
+	position: relative;
+	margin: 0 auto;
+	border: 2px solid #d3d3d3;
+	height:600px;
+	width: 1000px;
+}
