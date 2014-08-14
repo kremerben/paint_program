@@ -6,15 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Paint program</title>
 <script src="jquery.min.js"></script>
-<script src="index.js"></script>
+<script src="paint.js"></script>
+<!-- <script src="brushfunction.js"></script> -->
 		<link href="style.css" rel="stylesheet" type="text/css" media="all">
- 
+  
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
+<!-- /*   <script src="http://code.jquery.com/jquery-1.10.2.js"></script> */ -->
+  <script src="http://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+   <script>
+
+  $( "#slider" ).slider();
+
+  </script>
+
   </head>
 
 <body>
 
 <canvas id="DrawCanvas" width="1000" height="600" >
 Your browser does not support the HTML5 canvas tag.</canvas><br>
+
+
 
 <div class="colorbox" style="background-color:red;" data-bcolor="red"></div>
 <div class="colorbox" style="background-color:orange;" data-bcolor="orange"></div>
@@ -27,6 +39,12 @@ Your browser does not support the HTML5 canvas tag.</canvas><br>
 <div class="colorbox" style="background-color:black;" data-bcolor="black"></div>
 <div class="colorbox" style="background-color:grey;" data-bcolor="grey"></div>
 
+<div id="slider" style="width:260px; margin:15px;"></div>
+<input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
+
+<br><br>
+
+<button id="eraser" class="colorbox" style="background-color:white" data-bcolor="white">Eraser</button>
 
 </body>
 </html>
