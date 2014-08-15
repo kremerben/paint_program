@@ -6,18 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Paint program</title>
 <script src="jquery.min.js"></script>
-<script src="paint.js"></script>
 <!-- <script src="brushfunction.js"></script> -->
 		<link href="style.css" rel="stylesheet" type="text/css" media="all">
   
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
 <!-- /*   <script src="http://code.jquery.com/jquery-1.10.2.js"></script> */ -->
+
   <script src="http://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
    <script>
 
   $( "#slider" ).slider();
 
   </script>
+<script src="paint.js"></script>
 
   </head>
 
@@ -44,7 +45,26 @@ Your browser does not support the HTML5 canvas tag.</canvas><br>
 
 <br><br>
 
-<button id="eraser" class="colorbox" style="background-color:white" data-bcolor="white">Eraser</button>
+<button id="eraser" class="colorbox" style="background-color:white;width:100px;" data-bcolor="white">Eraser</button>
+<!--
+<button id="saveImage" >save image (This works)</button>
+<button id="undo" >undo  (not yet working</button>
+-->
+
+
+
+<div id='canvasImg'></div>
+
+    <div><button id="bt_saveLocal">Save Local (This works)</button></div>
+    <div><button id="bt_draw">Draw to Image (recreates lower</button></div>
+    <div><button id="bt_download">Download Image</button></div>
+    <image id="theimage"></image>
+
+
+                <hr>
+                Save Local, then refresh, prev saved image shows up below
+                
+                <img src="img.png" />
 
 </body>
 </html>
