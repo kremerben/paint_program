@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Paint program</title>
+<script src="jquery.min.js"></script>
+<!-- <script src="brushfunction.js"></script> -->
+		<link href="style.css" rel="stylesheet" type="text/css" media="all">
+    <script src="https://cdn.firebase.com/js/client/1.0.15/firebase.js"></script>
+
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
+<!-- /*   <script src="http://code.jquery.com/jquery-1.10.2.js"></script> */ -->
+
+  <script src="http://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+<!--
+   <script>
+
+  $( "#slider" ).slider();
+
+  </script>
+-->
+<script src="paint.js"></script>
+
+  </head>
+
+<body>
+
+<div id="mainCanvas" class="container">
+    <div class="row">
+    <canvas id="DrawCanvas" width="1000" height="600" >
+    Your browser does not support the HTML5 canvas tag.</canvas><br>
+    </div>
+</div>
+	<div id="colorholder"></div>
+
+    <div class="colorbox" style="background-color:#ff0000;" data-bcolor="red"></div>
+    <div class="colorbox" style="background-color:#ffa500;" data-bcolor="orange"></div>
+    <div class="colorbox" style="background-color:#ffff00;" data-bcolor="yellow"></div>
+    <div class="colorbox" style="background-color:#008000;" data-bcolor="green"></div>
+    <div class="colorbox" style="background-color:#0000ff;" data-bcolor="blue"></div>
+    <div class="colorbox" style="background-color:#4b0082;" data-bcolor="indigo"></div>
+    <div class="colorbox" style="background-color:#ee82ee;" data-bcolor="violet"></div>
+    <div class="colorbox" style="background-color:#ffffff" data-bcolor="white"></div>
+    <div class="colorbox" style="background-color:#000000;" data-bcolor="black"></div>
+    <div class="colorbox" style="background-color:#808080;" data-bcolor="grey"></div>
+
+    <div id="toolkit" class="container">
+
+        <div id="slider" style="width:250px; margin:15px;"><br>
+            Brush Width: <input type="text" id="brushWidth" value="1" readonly style="border:0; color:#341f07; font-weight:bold;">
+
+        </div>
+
+        <br><br>
+
+        <button id="eraser" class="colorbox" style="background-color:white;width:100px;" data-bcolor="white">Eraser</button>
+
+    </div>
+
+    <div id='canvasImg'></div>
+    <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
+    <div><button id="bt_saveLocal">Save Local (This works)</button></div>
+    <div><button id="bt_draw">Draw to Image (recreates lower</button></div>
+    <div><button id="clearCanvas">Clear Canvas</button></div>
+    <div><a id="bt_download"><button>Download Image</button></a></div>
+    <image id="theimage"></image>
+
+</body>
+</html>

@@ -1,70 +1,247 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Paint program</title>
-<script src="jquery.min.js"></script>
-<!-- <script src="brushfunction.js"></script> -->
-		<link href="style.css" rel="stylesheet" type="text/css" media="all">
-  
-    <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
-<!-- /*   <script src="http://code.jquery.com/jquery-1.10.2.js"></script> */ -->
-
+<html>
+<head>
+  <script src="https://cdn.firebase.com/js/client/1.0.15/firebase.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+      <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
   <script src="http://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
-   <script>
 
-  $( "#slider" ).slider();
-
-  </script>
-<script src="paint.js"></script>
-
-  </head>
-
+  <link rel="stylesheet" type="text/css" href="example.css">
+		<link href="style.css" rel="stylesheet" type="text/css" media="all">
+</head>
 <body>
-
-<canvas id="DrawCanvas" width="1000" height="600" >
-Your browser does not support the HTML5 canvas tag.</canvas><br>
-
-
-
-<div class="colorbox" style="background-color:red;" data-bcolor="red"></div>
-<div class="colorbox" style="background-color:orange;" data-bcolor="orange"></div>
-<div class="colorbox" style="background-color:yellow;" data-bcolor="yellow"></div>
-<div class="colorbox" style="background-color:green;" data-bcolor="green"></div>
-<div class="colorbox" style="background-color:blue;" data-bcolor="blue"></div>
-<div class="colorbox" style="background-color:indigo;" data-bcolor="indigo"></div>
-<div class="colorbox" style="background-color:violet;" data-bcolor="violet"></div>
-<div class="colorbox" style="background-color:white" data-bcolor="white"></div>
-<div class="colorbox" style="background-color:black;" data-bcolor="black"></div>
-<div class="colorbox" style="background-color:grey;" data-bcolor="grey"></div>
-
-<div id="slider" style="width:260px; margin:15px;"></div>
-<input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
-
-<br><br>
-
-<button id="eraser" class="colorbox" style="background-color:white;width:100px;" data-bcolor="white">Eraser</button>
-<!--
-<button id="saveImage" >save image (This works)</button>
-<button id="undo" >undo  (not yet working</button>
--->
-
-
-
-<div id='canvasImg'></div>
-
-    <div><button id="bt_saveLocal">Save Local (This works)</button></div>
-    <div><button id="bt_draw">Draw to Image (recreates lower</button></div>
-    <div><button id="bt_download">Download Image</button></div>
-    <image id="theimage"></image>
+<div class="l-demo-container">
+  <canvas id="drawing-canvas" width="1080" height="620"></canvas>
+</div>
+<div id="colorholder"></div>
+<script>
+  $(document).ready(function () {
+  
+  
+  	event.preventDefault();
+  
+    //Set up some globals
+    var lastPoint = null;
+    currentColor = "000";
+    mouseDown = 0;
+     xy = "";
+      brushStyle = "solid";
+       pixSize = 10;
+       
+       $(function() {
+    $( "#slider" ).slider({
+      value: pixSize,
+      min:1,
+      max:50,
+      orientation: "horizontal",
+      range: "min",
+      animate: true,
+        slide: function( event, ui ) {
+            pixSize = $( "#slider" ).slider( "value" );
+            $('#brushWidth').val(pixSize);
+        }
+    });
+  });
 
 
-                <hr>
-                Save Local, then refresh, prev saved image shows up below
-                
-                <img src="img.png" />
+    //Create a reference to the pixel data for our drawing.
+    var pixelDataRef = new Firebase('https://draw-with-me.firebaseio.com/');
+
+    // Set up our canvas
+    var myCanvas = document.getElementById('drawing-canvas');
+    var myContext = myCanvas.getContext ? myCanvas.getContext('2d') : null;
+    if (myContext == null) {
+      alert("You must use a browser that supports HTML5 Canvas to run this demo.");
+      return;
+    }
+
+    //Setup each color palette & add it to the screen
+    var colors = ["fff","000","f00","0f0","00f","88f","f8d","f88","f05","f80","0f8","cf0","08f","408","ff8","8ff"];
+    for (c in colors) {
+      var item = $('<div/>').css("background-color", '#' + colors[c]).addClass("colorbox");
+      item.click((function () {
+        var col = colors[c];
+        return function () {
+          currentColor = col;
+        };
+      })());
+      item.appendTo('#colorholder');
+    }
+
+    //Keep track of if the mouse is up or down
+    myCanvas.onmousedown = function () {mouseDown = 1;};
+
+    myCanvas.onmouseout = myCanvas.onmouseup = function () {
+      mouseDown = 0; lastPoint = null;
+      pixelDataRef.child('priorityCounter').set(priorityCounter);
+/*       pixelDataRef.child(cur_line_num).set({color:currentColor, pixSize:pixSize, brushStyle:brushStyle}); */
+	  lineVisible++;
+	  pixelDataRef.child('lineVisible').set(lineVisible);
+
+      cur_line_num++;
+      pixelDataRef.child('cur_line_num').set(cur_line_num);
+    };
+    
+    
+   pixelDataRef.child('priorityCounter').once('value', function(snapshot) {
+	   if (snapshot.val() === null) {
+			    priorityCounter = 1;
+			    pixelDataRef.child('priorityCounter').set(priorityCounter);
+	   } else {
+				priorityCounter = snapshot.val();
+				console.log(priorityCounter);
+	   }
+   });
+   
+   pixelDataRef.child('cur_line_num').once('value', function(snapshot) {
+	   if (snapshot.val() === null) {
+	   			cur_line_num = 1;
+				pixelDataRef.child('cur_line_num').set(cur_line_num);
+
+	   } else {
+				cur_line_num = snapshot.val();
+				console.log(cur_line_num);
+	   }
+   });
+   pixelDataRef.child('lineVisible').once('value', function(snapshot) {
+	   if (snapshot.val() === null) {
+	   			lineVisible = 1;
+				pixelDataRef.child('lineVisible').set(lineVisible);
+
+	   } else {
+				lineVisible = snapshot.val();
+				console.log(lineVisible);
+	   }
+   });
+/*         console.log("a"+ pixSize); */
+
+
+
+function getWidthSlider() {
+	
+	pixSize = $( "#slider" ).slider( "option", "value" );
+	return pixSize;
+};
+
+
+
+    //Draw a line from the mouse's last position to its current position
+    var drawLineOnMouseMove = function(e) {
+      if (!mouseDown) return;
+
+      e.preventDefault();
+      // Bresenham's line algorithm. We use this to ensure smooth lines are drawn
+      var offset = $('canvas').offset();
+      var x1 = Math.floor((e.pageX - offset.left)),
+        y1 = Math.floor((e.pageY - offset.top));
+      var x0 = (lastPoint == null) ? x1 : lastPoint[0];
+      var y0 = (lastPoint == null) ? y1 : lastPoint[1];
+      var dx = Math.abs(x1 - x0), dy = Math.abs(y1 - y0);
+      var sx = (x0 < x1) ? 1 : -1, sy = (y0 < y1) ? 1 : -1, err = dx - dy;
+      while (true) {
+        //write the pixel into Fi=currebase, or if we are drawing white, remove the pixel
+        xy = x0 + ":" + y0 + ":" + cur_line_num;
+        xy = xy.toString();
+        pixSize = getWidthSlider();
+        var info_dict = {currentColor:currentColor, pixSize:pixSize, brushStyle:brushStyle};
+/*
+        console.log("a"+ currentColor);
+        console.log("a"+ pixSize);
+        console.log("a"+ brushStyle);
+*/
+
+		pixelDataRef.child(xy).setWithPriority(info_dict, priorityCounter);
+		priorityCounter++;
+
+        if (x0 == x1 && y0 == y1) break;
+        var e2 = 2 * err;
+        if (e2 > -dy) {
+          err = err - dy;
+          x0 = x0 + sx;
+        }
+        if (e2 < dx) {
+          err = err + dx;
+          y0 = y0 + sy;
+        }
+      }
+      lastPoint = [x1, y1];
+    };
+    $(myCanvas).mousemove(drawLineOnMouseMove);
+    $(myCanvas).mousedown(drawLineOnMouseMove);
+
+    // Add callbacks that are fired any time the pixel data changes and adjusts the canvas appropriately.
+    // Note that child_added events will be fired for initial pixel data as well.
+    var drawPixel = function(snapshot) {
+
+    
+		var coords = snapshot.name().split(":");
+		if (!isNaN(coords[0])) {
+			line_number = parseInt(coords[2]);
+			if (line_number <= lineVisible) {
+
+/* 				temp1 = "#" + snapshot.val().currentColor; */
+				myContext.fillStyle = "#" + snapshot.val().currentColor;
+				pixSize = snapshot.val().pixSize;
+				brushStyle = snapshot.val().brushStyle;
+				x00 = parseInt(coords[0]);
+				y00 = parseInt(coords[1]);
+				myContext.fillRect(x00, y00, pixSize, pixSize);
+			
+			}
+	
+		
+		}
+
+    };
+    $('#undo').on('click', function() {
+	    lineVisible--;
+	    console.log(lineVisible+"-");
+	    pixelDataRef.child('lineVisible').set(lineVisible);
+	    //redraw whole canvas
+		drawPixel;
+    });
+    $('#redo').on('click', function() {
+	    lineVisible++;
+	    console.log(lineVisible+"+");
+	    pixelDataRef.child('lineVisible').set(lineVisible);
+	    //redraw whole canvas
+		drawPixel;
+    });
+
+    var clearPixel = function(snapshot) {
+    	console.log("shouldn't be here");
+      var coords = snapshot.name().split(":");
+      if (isNaN(snapshot.val()[1])) {
+	      pixSize = 1;
+      } else {
+	      pixSize = snapshot.val()[1];
+      }
+      if (pixSize > 1) {
+	    for (var i = 0; i < pixSize; i++) {
+	    	for (var j = 0; j < pixSize; j++) {
+	        	x0 += i;
+	        	y0 += j;
+				myContext.fillRect(parseInt(coords[0]), parseInt(coords[1]), 1, 1);
+	        }
+	    }
+	}
+      myContext.clearRect(parseInt(coords[0]), parseInt(coords[1]), pixSize, pixSize);
+    };
+    
+    pixelDataRef.on('child_added', drawPixel);
+    pixelDataRef.on('child_changed', drawPixel);
+    pixelDataRef.on('child_removed', clearPixel);
+    
+    
+  });
+</script>
+
+
+        <div id="slider" style="width:250px; margin:15px;"><br>
+            Brush Width: <input type="text" id="brushWidth" value="1" readonly style="border:0; color:#341f07; font-weight:bold;">
+
+        </div>
+        <button id="undo">Undo</button>
+        <button id="redo">Redo</button>
 
 </body>
 </html>
