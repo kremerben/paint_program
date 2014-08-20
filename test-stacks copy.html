@@ -2,32 +2,62 @@
 <head>
   <script src="https://cdn.firebase.com/js/client/1.0.15/firebase.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-      <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
   <script src="http://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
-
   <link rel="stylesheet" type="text/css" href="example.css">
-		<link href="style.css" rel="stylesheet" type="text/css" media="all">
+	<link href="style.css" rel="stylesheet" type="text/css" media="all">
+
+<style>
+#canvasStack		{
+  position: relative;
+  width: 1080px;
+  height: 620px;
+}
+
+canvas		{
+position: absolute;
+top: 0px;
+left: 0px;
+}
+</style>
+<script>
+window.requestAnimFrame = (function(){
+  return  window.requestAnimationFrame       ||
+          window.webkitRequestAnimationFrame ||
+          window.mozRequestAnimationFrame    ||
+          function( callback ){
+            window.setTimeout(callback, 1000 / 60);
+          };
+})();
+</script>
+
 </head>
 <body>
-<div class="l-demo-container">
-  <canvas id="drawing-canvas" width="1080" height="620"></canvas>
+<div id="canvasStack"></div>
+
+<div class="l-demo-container" id='l-demo-container'>
+  <canvas id="drawing-canvas" width="1080" height="620" style="z-index:0"></canvas>
 </div>
 <div id="colorholder"></div>
 <script>
-  $(document).ready(function () {
-  
-  
-  	event.preventDefault();
-  
-    //Set up some globals
-    var lastPoint = null;
-    currentColor = "000";
-    mouseDown = 0;
-     xy = "";
-      brushStyle = "solid";
-       pixSize = 10;
-       
-       $(function() {
+$(document).ready(function () {
+
+  var canvasStack = document.getElementById('l-demo-container');
+  var count = 0;
+  var canvasArray = [];
+  var maxtime = 0;
+
+  event.preventDefault();
+
+  //Set up some globals
+  var lastPoint = null;
+  currentColor = "000";
+  mouseDown = 0;
+  xy = "";
+  brushStyle = "solid";
+  pixSize = 10;
+
+  $(function() {
     $( "#slider" ).slider({
       value: pixSize,
       min:1,
@@ -47,12 +77,16 @@
     var pixelDataRef = new Firebase('https://draw-with-me.firebaseio.com/');
 
     // Set up our canvas
-    var myCanvas = document.getElementById('drawing-canvas');
-    var myContext = myCanvas.getContext ? myCanvas.getContext('2d') : null;
-    if (myContext == null) {
-      alert("You must use a browser that supports HTML5 Canvas to run this demo.");
-      return;
+    var initialize = function(){
+      myCanvas = document.getElementById('drawing-canvas');
+      myContext = myCanvas.getContext ? myCanvas.getContext('2d') : null;
+      if (myContext == null) {
+        alert("You must use a browser that supports HTML5 Canvas to run this demo.");
+        return;
+      }
     }
+
+    initialize();
 
     //Setup each color palette & add it to the screen
     var colors = ["fff","000","f00","0f0","00f","88f","f8d","f88","f05","f80","0f8","cf0","08f","408","ff8","8ff"];
@@ -68,20 +102,39 @@
     }
 
     //Keep track of if the mouse is up or down
-    myCanvas.onmousedown = function () {mouseDown = 1;};
+    $(document).on('mousedown', '#drawing-canvas', function(){
+        mouseDown = 1;
+    });
+    // myCanvas.onmousedown = function () {mouseDown = 1;};
 
-    myCanvas.onmouseout = myCanvas.onmouseup = function () {
+  // Haphazardly declaring variables.
+  var zindex = 1;  // just kidding. Don't delete me.
+
+    $(document).on('mouseup', '#drawing-canvas', function(){
+      console.log($(this));
+
+    // myCanvas.onmouseout = myCanvas.onmouseup = function () {
+      // Change current canvas id to layerzindex
+      $('#drawing-canvas').attr('id', "layer0");
+      canvas = document.createElement('canvas');
+      canvasStack.appendChild(canvas);
+      $('#l-demo-container').find('canvas').last().attr('id', "drawing-canvas");
+      $('#l-demo-container').find('canvas').last().css('z-index', cur_line_num);
+      canvas.width = 1080;
+      canvas.height = 620;
+      zindex += 1;
+
       mouseDown = 0; lastPoint = null;
       pixelDataRef.child('priorityCounter').set(priorityCounter);
-/*       pixelDataRef.child(cur_line_num).set({color:currentColor, pixSize:pixSize, brushStyle:brushStyle}); */
-	  lineVisible++;
-	  pixelDataRef.child('lineVisible').set(lineVisible);
-
+      /*       pixelDataRef.child(cur_line_num).set({color:currentColor, pixSize:pixSize, brushStyle:brushStyle}); */
+      lineVisible++;
+      pixelDataRef.child('lineVisible').set(lineVisible);
       cur_line_num++;
       pixelDataRef.child('cur_line_num').set(cur_line_num);
-    };
-    
-    
+      myCanvas = document.getElementById('drawing-canvas');
+    // };
+    });
+
    pixelDataRef.child('priorityCounter').once('value', function(snapshot) {
 	   if (snapshot.val() === null) {
 			    priorityCounter = 1;
@@ -91,7 +144,7 @@
 				console.log(priorityCounter);
 	   }
    });
-   
+
    pixelDataRef.child('cur_line_num').once('value', function(snapshot) {
 	   if (snapshot.val() === null) {
 	   			cur_line_num = 1;
@@ -115,20 +168,18 @@
 /*         console.log("a"+ pixSize); */
 
 
-
 function getWidthSlider() {
-	
 	pixSize = $( "#slider" ).slider( "option", "value" );
 	return pixSize;
 };
 
 
-
     //Draw a line from the mouse's last position to its current position
     var drawLineOnMouseMove = function(e) {
+
       if (!mouseDown) return;
 
-      e.preventDefault();
+      // e.preventDefault();
       // Bresenham's line algorithm. We use this to ensure smooth lines are drawn
       var offset = $('canvas').offset();
       var x1 = Math.floor((e.pageX - offset.left)),
@@ -165,35 +216,35 @@ function getWidthSlider() {
       }
       lastPoint = [x1, y1];
     };
-    $(myCanvas).mousemove(drawLineOnMouseMove);
-    $(myCanvas).mousedown(drawLineOnMouseMove);
+    $(document).on('mousemove', '#drawing-canvas', function(e){
+      drawLineOnMouseMove(e);
+    });
+    $(document).on('mousedown', '#drawing-canvas', function(e){
+      drawLineOnMouseMove(e);
+    });
+
+    // $('#drawing-canvas').mousemove(drawLineOnMouseMove);
+    // $('#drawing-canvas').mousedown(drawLineOnMouseMove);
+
 
     // Add callbacks that are fired any time the pixel data changes and adjusts the canvas appropriately.
     // Note that child_added events will be fired for initial pixel data as well.
     var drawPixel = function(snapshot) {
+  		var coords = snapshot.name().split(":");
+  		if (!isNaN(coords[0])) {
+  			line_number = parseInt(coords[2]);
+        myContext = myCanvas.getContext ? myCanvas.getContext('2d') : null;
 
-    
-		var coords = snapshot.name().split(":");
-		if (!isNaN(coords[0])) {
-			line_number = parseInt(coords[2]);
-			if (line_number <= lineVisible) {
-
-/* 				temp1 = "#" + snapshot.val().currentColor; */
-				myContext.fillStyle = "#" + snapshot.val().currentColor;
-				pixSize = snapshot.val().pixSize;
-				brushStyle = snapshot.val().brushStyle;
-				x00 = parseInt(coords[0]);
-				y00 = parseInt(coords[1]);
-				myContext.fillRect(x00, y00, pixSize, pixSize);
-			
-			}
-	
-		
-		}
-
+  			myContext.fillStyle = "#" + snapshot.val().currentColor;
+  			pixSize = snapshot.val().pixSize;
+  			brushStyle = snapshot.val().brushStyle;
+  			x00 = parseInt(coords[0]);
+  			y00 = parseInt(coords[1]);
+  			myContext.fillRect(x00, y00, pixSize, pixSize);
+  		}
     };
-    
-    
+
+
     $('#undo').on('click', function() {
     //line_number = style:display:none
     //line_number--  = or into array?
@@ -201,14 +252,14 @@ function getWidthSlider() {
 	    console.log(lineVisible+"-");
 	    pixelDataRef.child('lineVisible').set(lineVisible);
 	    //redraw whole canvas
-		drawPixel;
+		  drawPixel;
     });
     $('#redo').on('click', function() {
 	    lineVisible++;
 	    console.log(lineVisible+"+");
 	    pixelDataRef.child('lineVisible').set(lineVisible);
 	    //redraw whole canvas
-		drawPixel;
+		  drawPixel;
     });
 
     var clearPixel = function(snapshot) {
@@ -230,12 +281,12 @@ function getWidthSlider() {
 	}
       myContext.clearRect(parseInt(coords[0]), parseInt(coords[1]), pixSize, pixSize);
     };
-    
+
     pixelDataRef.on('child_added', drawPixel);
     pixelDataRef.on('child_changed', drawPixel);
     pixelDataRef.on('child_removed', clearPixel);
-    
-    
+
+
   });
 </script>
 
