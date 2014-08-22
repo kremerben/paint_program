@@ -19,10 +19,6 @@ position: absolute;
 top: 0px;
 left: 0px;
 }
-.hidden {
-  display:none;
-}
-
 </style>
 <script>
 window.requestAnimFrame = (function(){
@@ -111,34 +107,31 @@ $(document).ready(function () {
     });
     // myCanvas.onmousedown = function () {mouseDown = 1;};
 
-    // Haphazardly declaring variables.
-    var zindex = 1;  // just kidding. Don't delete me.
+  // Haphazardly declaring variables.
+  var zindex = 1;  // just kidding. Don't delete me.
 
-  $(document).on('mouseup', '#drawing-canvas', function(){
-      // console.log($(this));
+    $(document).on('mouseup', '#drawing-canvas', function(){
+      console.log($(this));
 
     // myCanvas.onmouseout = myCanvas.onmouseup = function () {
       // Change current canvas id to layerzindex
-      // layerid = "layer" + (cur_line_num - 1);
-      // $('#drawing-canvas').attr('id', layerid);
-      // canvas = document.createElement('canvas');
-      // canvasStack.appendChild(canvas);
-      // $('#l-demo-container').find('canvas').last().attr('id', "drawing-canvas");
-      // $('#l-demo-container').find('canvas').last().css('z-index', cur_line_num);
-      // canvas.width = 1080;
-      // canvas.height = 620;
-      // zindex += 1;
+      $('#drawing-canvas').attr('id', "layer0");
+      canvas = document.createElement('canvas');
+      canvasStack.appendChild(canvas);
+      $('#l-demo-container').find('canvas').last().attr('id', "drawing-canvas");
+      $('#l-demo-container').find('canvas').last().css('z-index', cur_line_num);
+      canvas.width = 1080;
+      canvas.height = 620;
+      zindex += 1;
 
       mouseDown = 0; lastPoint = null;
       pixelDataRef.child('priorityCounter').set(priorityCounter);
       /*       pixelDataRef.child(cur_line_num).set({color:currentColor, pixSize:pixSize, brushStyle:brushStyle}); */
       lineVisible++;
-      console.log(lineVisible);
       pixelDataRef.child('lineVisible').set(lineVisible);
       cur_line_num++;
-      console.log(cur_line_num);
       pixelDataRef.child('cur_line_num').set(cur_line_num);
-      // myCanvas = document.getElementById('drawing-canvas');
+      myCanvas = document.getElementById('drawing-canvas');
     // };
     });
 
@@ -185,7 +178,7 @@ function getWidthSlider() {
     var drawLineOnMouseMove = function(e) {
 
       if (!mouseDown) return;
-      console.log("md "+ mouseDown);
+
       // e.preventDefault();
       // Bresenham's line algorithm. We use this to ensure smooth lines are drawn
       var offset = $('canvas').offset();
@@ -200,7 +193,7 @@ function getWidthSlider() {
         xy = x0 + ":" + y0 + ":" + cur_line_num;
         xy = xy.toString();
         pixSize = getWidthSlider();
-        var info_dict = {currentColor:currentColor, pixSize:pixSize, brushStyle:brushStyle, display: "initial"};
+        var info_dict = {currentColor:currentColor, pixSize:pixSize, brushStyle:brushStyle};
 /*
         console.log("a"+ currentColor);
         console.log("a"+ pixSize);
@@ -236,83 +229,37 @@ function getWidthSlider() {
 
     // Add callbacks that are fired any time the pixel data changes and adjusts the canvas appropriately.
     // Note that child_added events will be fired for initial pixel data as well.
-last_line_number = -1;
-
     var drawPixel = function(snapshot) {
   		var coords = snapshot.name().split(":");
-
   		if (!isNaN(coords[0])) {
-
-
-        line_number = parseInt(coords[2]);
-              console.log('last '+last_line_number);
-              console.log('cur '+line_number);
-        if (line_number > last_line_number) {
-          layerid = "layer" + (line_number - 1);
-          $('#drawing-canvas').attr('id', layerid);
-          canvas = document.createElement('canvas');
-          canvasStack.appendChild(canvas);
-          var el = $('#l-demo-container').find('canvas').last();
-          el.attr('id', "drawing-canvas");
-          el.css('z-index', line_number);
-          canvas.width = 1080;
-          canvas.height = 620;
-          zindex += 1;
-
-          if (snapshot.val().display === "hidden") {
-            el.addClass('hidden');
-          } else {
-            el.removeClass('hidden');
-          };
-        }
-
+  			line_number = parseInt(coords[2]);
         myContext = myCanvas.getContext ? myCanvas.getContext('2d') : null;
 
-        myContext.fillStyle = "#" + snapshot.val().currentColor;
-        pixSize = snapshot.val().pixSize;
-        brushStyle = snapshot.val().brushStyle;
-        x00 = parseInt(coords[0]);
-        y00 = parseInt(coords[1]);
-        myContext.fillRect(x00, y00, pixSize, pixSize);
-
-        /*       pixelDataRef.child(cur_line_num).set({color:currentColor, pixSize:pixSize, brushStyle:brushStyle}); */
-        // lineVisible++;
-        // console.log(lineVisible);
-        // pixelDataRef.child('lineVisible').set(lineVisible);
-        // cur_line_num++;
-        // console.log(cur_line_num);
-        // pixelDataRef.child('cur_line_num').set(cur_line_num);
-        myCanvas = document.getElementById('drawing-canvas');
+  			myContext.fillStyle = "#" + snapshot.val().currentColor;
+  			pixSize = snapshot.val().pixSize;
+  			brushStyle = snapshot.val().brushStyle;
+  			x00 = parseInt(coords[0]);
+  			y00 = parseInt(coords[1]);
+  			myContext.fillRect(x00, y00, pixSize, pixSize);
   		}
-        last_line_number = line_number;
     };
 
 
     $('#undo').on('click', function() {
-      // if (lineVisible >= cur_line_num) {
-      //   return;
-      // }
-
     //line_number = style:display:none
     //line_number--  = or into array?
-      // var layerHide = 'layer' + (lineVisible-2)
-      hideElement = document.getElementById(('layer' + (lineVisible-2)));
-      $(hideElement).addClass('hidden');
 	    lineVisible--;
 	    console.log(lineVisible+"-");
 	    pixelDataRef.child('lineVisible').set(lineVisible);
+	    //redraw whole canvas
+		  drawPixel;
     });
-
     $('#redo').on('click', function() {
-      // if (lineVisible >= cur_line_num) {
-      //   return;
-      // }
-      showElement = document.getElementById(('layer' + (lineVisible-1)));
-      $(showElement).removeClass('hidden');
-
 	    lineVisible++;
 	    console.log(lineVisible+"+");
 	    pixelDataRef.child('lineVisible').set(lineVisible);
+	    //redraw whole canvas
+		  drawPixel;
     });
 
     var clearPixel = function(snapshot) {

@@ -14,3 +14,22 @@ text-align: center;
 	height:600px;
 	width: 1000px;
 }
+
+#canvasStack        {
+  position: relative;
+  width: 1080px;
+  height: 620px;
+}
+
+canvas      {
+position: absolute;
+top: 0px;
+left: 0px;
+}
+.hidden {
+  display:none;
+}
+
+#colorholder {
+    height:50px;
+}

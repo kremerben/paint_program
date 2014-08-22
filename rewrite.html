@@ -1,0 +1,31 @@
+<html>
+<head>
+  <script src="https://cdn.firebase.com/js/client/1.0.15/firebase.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
+  <script src="http://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+  <link rel="stylesheet" type="text/css" href="example.css">
+	<link href="style.css" rel="stylesheet" type="text/css" media="all">
+    <script src="canvasLayer.js"></script>
+
+</head>
+<body>
+
+
+<div class="canvasStack" id='canvasStack'>
+  <canvas id="drawing-canvas" width="1080" height="620" style="z-index:0"></canvas>
+</div>
+<div id="colorholder"></div>
+
+  <div id="slider" style="width:250px; margin:15px;"><br>
+    <form oninput="amount.value=brushWidth.value">
+      <input type="range" id="brushWidth" name="brushWidth" value="10" min="0" max="100">
+        Brush Width: <output name="amount" for="brushWidth">0</output>
+    </form>
+  </div>
+  <br><br>
+        <button id="undo">Undo</button>
+        <button id="redo">Redo</button>
+
+</body>
+</html>

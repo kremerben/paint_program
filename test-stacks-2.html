@@ -117,27 +117,53 @@ $(document).ready(function () {
   $(document).on('mouseup', '#drawing-canvas', function(){
       // console.log($(this));
 
+        //   lineVisible++;
+        //   layerid = "layer" + (line_number - 1);
+        //   $('#drawing-canvas').attr('id', layerid);
+        //   canvas = document.createElement('canvas');
+        //   canvasStack.appendChild(canvas);
+        //   var el = $('#l-demo-container').find('canvas').last();
+        //   el.attr('id', "drawing-canvas");
+        //   el.css('z-index',line_number);
+        //   canvas.width = 1080;
+        //   canvas.height = 620;
+        //   zindex += 1;
+
+
+        // last_line_number = line_number;
+
+
+
+      lineVisible++;
+      // console.log(lineVisible);
+      pixelDataRef.child('lineVisible').set(lineVisible);
+      cur_line_num++;
+      // console.log(cur_line_num);
+      pixelDataRef.child('cur_line_num').set(cur_line_num);
+
+
+
+
     // myCanvas.onmouseout = myCanvas.onmouseup = function () {
       // Change current canvas id to layerzindex
-      // layerid = "layer" + (cur_line_num - 1);
-      // $('#drawing-canvas').attr('id', layerid);
-      // canvas = document.createElement('canvas');
-      // canvasStack.appendChild(canvas);
-      // $('#l-demo-container').find('canvas').last().attr('id', "drawing-canvas");
-      // $('#l-demo-container').find('canvas').last().css('z-index', cur_line_num);
-      // canvas.width = 1080;
-      // canvas.height = 620;
-      // zindex += 1;
+      layerid = "layer" + (last_line_number);
+      $('#drawing-canvas').attr('id', layerid);
+      canvas = document.createElement('canvas');
+      canvasStack.appendChild(canvas);
+      $('#l-demo-container').find('canvas').last().attr('id', "drawing-canvas");
+      $('#l-demo-container').find('canvas').last().css('z-index', cur_line_num);
+      canvas.width = 1080;
+      canvas.height = 620;
+      zindex += 1;
+
+      myContext = myCanvas.getContext ? myCanvas.getContext('2d') : null;
+      myCanvas = document.getElementById('drawing-canvas');
+
+
 
       mouseDown = 0; lastPoint = null;
       pixelDataRef.child('priorityCounter').set(priorityCounter);
       /*       pixelDataRef.child(cur_line_num).set({color:currentColor, pixSize:pixSize, brushStyle:brushStyle}); */
-      lineVisible++;
-      console.log(lineVisible);
-      pixelDataRef.child('lineVisible').set(lineVisible);
-      cur_line_num++;
-      console.log(cur_line_num);
-      pixelDataRef.child('cur_line_num').set(cur_line_num);
       // myCanvas = document.getElementById('drawing-canvas');
     // };
     });
@@ -236,9 +262,26 @@ function getWidthSlider() {
 
     // Add callbacks that are fired any time the pixel data changes and adjusts the canvas appropriately.
     // Note that child_added events will be fired for initial pixel data as well.
-last_line_number = -1;
+last_line_number = 1;
 
     var drawPixel = function(snapshot) {
+      if (snapshot.name() === "cur_line_num" && snapshot.val() > 1) {
+        console.log("b "+snapshot.val());
+
+          lineVisible++;
+          layerid = "layer" + (line_number - 1);
+          $('#drawing-canvas').attr('id', layerid);
+          canvas = document.createElement('canvas');
+          canvasStack.appendChild(canvas);
+          var el = $('#l-demo-container').find('canvas').last();
+          el.attr('id', "drawing-canvas");
+          el.css('z-index',line_number);
+          canvas.width = 1080;
+          canvas.height = 620;
+          zindex += 1;
+
+      };
+
   		var coords = snapshot.name().split(":");
 
   		if (!isNaN(coords[0])) {
@@ -248,13 +291,14 @@ last_line_number = -1;
               console.log('last '+last_line_number);
               console.log('cur '+line_number);
         if (line_number > last_line_number) {
+          lineVisible++;
           layerid = "layer" + (line_number - 1);
           $('#drawing-canvas').attr('id', layerid);
           canvas = document.createElement('canvas');
           canvasStack.appendChild(canvas);
           var el = $('#l-demo-container').find('canvas').last();
           el.attr('id', "drawing-canvas");
-          el.css('z-index', line_number);
+          el.css('z-index',line_number);
           canvas.width = 1080;
           canvas.height = 620;
           zindex += 1;
@@ -275,16 +319,9 @@ last_line_number = -1;
         y00 = parseInt(coords[1]);
         myContext.fillRect(x00, y00, pixSize, pixSize);
 
-        /*       pixelDataRef.child(cur_line_num).set({color:currentColor, pixSize:pixSize, brushStyle:brushStyle}); */
-        // lineVisible++;
-        // console.log(lineVisible);
-        // pixelDataRef.child('lineVisible').set(lineVisible);
-        // cur_line_num++;
-        // console.log(cur_line_num);
-        // pixelDataRef.child('cur_line_num').set(cur_line_num);
         myCanvas = document.getElementById('drawing-canvas');
-  		}
         last_line_number = line_number;
+  		}
     };
 
 
@@ -296,7 +333,7 @@ last_line_number = -1;
     //line_number = style:display:none
     //line_number--  = or into array?
       // var layerHide = 'layer' + (lineVisible-2)
-      hideElement = document.getElementById(('layer' + (lineVisible-2)));
+      hideElement = document.getElementById(('layer' + (lineVisible-1)));
       $(hideElement).addClass('hidden');
 	    lineVisible--;
 	    console.log(lineVisible+"-");
@@ -307,7 +344,7 @@ last_line_number = -1;
       // if (lineVisible >= cur_line_num) {
       //   return;
       // }
-      showElement = document.getElementById(('layer' + (lineVisible-1)));
+      showElement = document.getElementById(('layer' + (lineVisible)));
       $(showElement).removeClass('hidden');
 
 	    lineVisible++;
